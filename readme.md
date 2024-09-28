@@ -1,6 +1,3 @@
-Here's a draft README for **StudyBot Sync**:
-
----
 
 # StudyBot Sync
 

@@ -19,7 +19,12 @@ class StudyBotApp(Tk):
         self.__json_manager = JsonDataManager(json_path=self.__JSON_PATH)
         self.__store_initial_data()
         self.__header_frame = HeaderFrame(self.__main_frame, title=self.__TITLE)
-        self.__left_frame = LeftSideFrame(self.__main_frame, questions_logs=[])
+        self.__left_frame = LeftSideFrame(self.__main_frame, questions_logs=[{"questionName": "Science",
+                                                                              "score": "2/10", "date":
+                                                                              "29/09/24", "time": "11:25 am"},
+                                                                             {"questionName": "Science",
+                                                                              "score": "9/10", "date":
+                                                                              "29/09/24", "time": "11:25 am"}])
         self.__right_side_frame = RightSideFrame(self.__main_frame, image_manager=self.__image_manager,
                                                  questions_list=retrieve_questions_data())
         self.__set_quit_functions()

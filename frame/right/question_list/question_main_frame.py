@@ -49,8 +49,7 @@ class QuestionMainFrame(FrameElement):
             self.__delete_question()
         else:
             self.__question_frame.set_questions(question_list=self.__main_question_dict["questions"],
-                                                image_manager=self.__image_manager,
-                                                function_manager=self.__function_manager)
+                                                image_manager=self.__image_manager)
             self.__title_element.set_title(title=self.__main_question_dict["title"])
             self.__function_manager.call_functions("set_view")
 

@@ -23,7 +23,9 @@ class QuestionTitleElement(EditableElement):
         self.__cancel_button = self.__get_cancel_button(function=lambda: function_manager.call_functions("revert_question"))
         self.__confirm_button = self.__get_confirm_button(function=lambda: function_manager.call_functions("save_question"))
         self.__remove_button = self.__get_remove_button(function=lambda: function_manager.call_functions("delete_question"))
+
         self.__edit_button = self.__get_edit_button(function=lambda: function_manager.call_functions("set_edit"))
+        self.__upload_button = self.__get_upload_button(function=lambda: print("upload"))
 
         self.__setup(function_manager=function_manager)
 
@@ -98,6 +100,13 @@ class QuestionTitleElement(EditableElement):
                                  background=THEME_COLOR)
         return edit_button
 
+    def __get_upload_button(self, function: Callable) -> Button:
+        upload_image = self.__image_manager.get_tkinter_image(name="upload_logo_2.png", size=(21, 21))
+        self._frame.upload_image = upload_image
+        upload_button = LogoButton(self._frame, image=upload_image, command=function,
+                                    background=THEME_COLOR)
+        return upload_button
+
     def _base_pack(self) -> None:
         self._pack(padx=(0, MARGIN_BETWEEN_QUESTION))
         self.__title_entry.place(x=46, y=10)
@@ -112,7 +121,8 @@ class QuestionTitleElement(EditableElement):
 
     def pack_view(self) -> None:
         self._base_pack()
-        self.__edit_button.place(x=530, y=0)
+        self.__edit_button.place(x=528, y=0)
+        self.__upload_button.place(x=507, y=14)
         self.__title_entry.config(state="readonly")
 
     def pack(self) -> None:
@@ -129,6 +139,7 @@ class QuestionTitleElement(EditableElement):
         self.__remove_button.place_forget()
         self.__cancel_button.place_forget()
         self.__edit_button.place_forget()
+        self.__upload_button.place_forget()
 
     @property
     def get_title(self) -> str:

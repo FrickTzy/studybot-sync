@@ -2,7 +2,6 @@ from tkinter import Frame, Label, Entry
 from interface.editable_element import EditableElement
 from helper_files import ImageManager
 from custom_elements.logo_button import LogoButton
-from helper_files import FunctionManager
 from typing import Callable
 
 
@@ -10,7 +9,7 @@ class QuestionElement(EditableElement):
     __BACKGROUND = "lightgray"
 
     def __init__(self, parent_frame: Frame,
-                 image_manager: ImageManager, function_manager: FunctionManager, remove_function: Callable,
+                 image_manager: ImageManager, remove_function: Callable,
                  initial_question: str = "", initial_answer: str = ""):
         super().__init__(parent_frame, bg=self.__BACKGROUND, width=528, height=41)
         self.__image_manager = image_manager
@@ -73,10 +72,6 @@ class QuestionElement(EditableElement):
         self.__answer_entry.config(state="normal")
         self.__question_entry.config(state="normal")
         self.__remove_button.place(x=490, y=6)
-
-    @property
-    def shown(self) -> bool:
-        return bool(self._frame.winfo_manager())
 
     def unpack(self) -> None:
         self._unpack()

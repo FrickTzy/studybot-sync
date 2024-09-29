@@ -17,17 +17,15 @@ class QuestionFrame(EditableElement):
         self.__toggle_state_manager = toggle_state_manager
         self.add_functions(function_manager=function_manager)
         if question_list:
-            self.set_questions(question_list=question_list, image_manager=image_manager,
-                               function_manager=function_manager)
+            self.set_questions(question_list=question_list, image_manager=image_manager)
         else:
             self.__question_element_list.append(QuestionElement(image_manager=image_manager, parent_frame=self._frame,
-                                                                remove_function=self.__remove_question,
-                                                                function_manager=function_manager))
+                                                                remove_function=self.__remove_question))
 
     def add_functions(self, function_manager: FunctionManager) -> None:
         function_manager.add_function("toggle_function", self.__toggle_function)
 
-    def set_questions(self, question_list: list[dict], image_manager: ImageManager, function_manager: FunctionManager) -> None:
+    def set_questions(self, question_list: list[dict], image_manager: ImageManager) -> None:
         self.unpack()
         self.__question_element_list.clear()
         for question_dict in question_list:
@@ -35,8 +33,7 @@ class QuestionFrame(EditableElement):
                                                                 parent_frame=self._frame,
                                                                 initial_question=question_dict.get("question"),
                                                                 initial_answer=question_dict.get("answer"),
-                                                                remove_function=self.__remove_question,
-                                                                function_manager=function_manager)
+                                                                remove_function=self.__remove_question)
             self.__question_element_list.append(question_element)
 
     @property

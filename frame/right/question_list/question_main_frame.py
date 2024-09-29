@@ -6,8 +6,8 @@ from helper_files import ImageManager
 from helper_files.state_manager.element_state import ElementState
 from helper_files.state_manager.state_manager import StateManager
 from helper_files.question_data_manager import delete_question
-from helper_files.function_manager import FunctionManager
-from helper_files.toggle_state_manager import ToggleStateManager
+from helper_files import FunctionManager, ToggleStateManager, UploadManager
+from typing import Callable
 
 
 class QuestionMainFrame(FrameElement):
@@ -15,7 +15,7 @@ class QuestionMainFrame(FrameElement):
     __PADDING_Y = 10
 
     def __init__(self, question: dict, parent_frame: Frame,
-                 image_manager: ImageManager, state_manager: StateManager):
+                 image_manager: ImageManager, state_manager: StateManager, upload_function: Callable):
         super().__init__(parent_frame=parent_frame)
         self.__state_manager = state_manager
         self.__main_question_dict = question
@@ -23,9 +23,10 @@ class QuestionMainFrame(FrameElement):
 
         toggled_on = self.__state_manager.on_editing_mode()
         self.__toggle_state_manager = ToggleStateManager(toggled_on=toggled_on)
+        self.__upload_manager = UploadManager()
 
         self.__function_manager = FunctionManager()
-        self.__add_functions()
+        self.__add_functions(upload_function=upload_function)
         self._set_packing_kwargs(packing_kwargs={"padx": self.__PADDING_X, "pady": self.__PADDING_Y})
         self.__question_frame = QuestionFrame(parent_frame=self._frame, question_list=question.get("questions"),
                                               image_manager=image_manager, state_manager=self.__state_manager,
@@ -34,18 +35,20 @@ class QuestionMainFrame(FrameElement):
         self.__title_element = QuestionTitleElement(parent_frame=self._frame, title=question.get("title"),
                                                     image_manager=image_manager, state_manager=self.__state_manager,
                                                     function_manager=self.__function_manager,
-                                                    toggled_on=toggled_on)
+                                                    toggled_on=toggled_on, upload_manager=self.__upload_manager)
 
-    def __add_functions(self):
+    def __add_functions(self, upload_function: Callable):
         self.__function_manager.add_function("save_question", self.__save_function)
         self.__function_manager.add_function("set_view", self.__set_view)
         self.__function_manager.add_function("delete_question", self.__delete_question)
         self.__function_manager.add_function("set_edit", self.__set_edit)
         self.__function_manager.add_function("revert_question", self.__revert_function)
         self.__function_manager.add_function("toggle_function", self.__toggle_state_manager.toggle)
+        self.__function_manager.add_function("upload_function", lambda: upload_function(self,
+                                                                                        self.__main_question_dict))
 
     def __revert_function(self) -> None:
-        if not self.__main_question_dict:
+        if not self.__main_question_dict.get("title"):
             self.__delete_question()
         else:
             self.__question_frame.set_questions(question_list=self.__main_question_dict["questions"],
@@ -63,12 +66,14 @@ class QuestionMainFrame(FrameElement):
         delete_question(question=self.__main_question_dict)
 
     def _pack_implementation(self) -> None:
+        self.__upload_manager.uploaded = self.__main_question_dict["questionUploaded"]
         self.__title_element.pack()
         self.__question_frame.pack()
 
-    def pack(self) -> None:
-        self._frame.pack(**self._packing_kwargs)
-        self._pack_implementation()
+    def unpack(self) -> None:
+        self._frame.pack_forget()
+        self.__title_element.unpack()
+        self.__question_frame.unpack()
 
     def __update(self) -> None:
         self.__title_element.unpack()

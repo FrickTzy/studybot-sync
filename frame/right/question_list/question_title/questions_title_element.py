@@ -1,5 +1,5 @@
 from interface.editable_element import EditableElement
-from settings import THEME_COLOR, MARGIN_BETWEEN_QUESTION
+from settings import THEME_COLOR, MARGIN_BETWEEN_QUESTION, SECONDARY_COLOR
 from utils.toggle_functions import toggle_button_image
 from utils.element_functions import add_placeholder_to_frame
 from helper_files import ImageManager
@@ -7,12 +7,12 @@ from tkinter import Frame, Entry, END, Button
 from custom_elements import LogoButton
 from helper_files import StateManager
 from typing import Callable
-from helper_files import FunctionManager
+from helper_files import FunctionManager, UploadManager
 
 
 class QuestionTitleElement(EditableElement):
     def __init__(self, parent_frame: Frame, image_manager: ImageManager, state_manager: StateManager,
-                 function_manager: FunctionManager, toggled_on: bool, title: str = ""):
+                 function_manager: FunctionManager, toggled_on: bool,  upload_manager: UploadManager, title: str = ""):
         super().__init__(parent_frame, bg=THEME_COLOR, width=575, height=50)
         self.__parent_frame = parent_frame
         self.__image_manager = image_manager
@@ -25,11 +25,15 @@ class QuestionTitleElement(EditableElement):
         self.__remove_button = self.__get_remove_button(function=lambda: function_manager.call_functions("delete_question"))
 
         self.__edit_button = self.__get_edit_button(function=lambda: function_manager.call_functions("set_edit"))
-        self.__upload_button = self.__get_upload_button(function=lambda: print("upload"))
+        self.__upload_button = self.__get_upload_button(function=lambda: function_manager.call_functions("upload_function"))
+
+        self.__buttons = [self.__toggle_questions_button, self.__cancel_button,
+                          self.__confirm_button, self.__remove_button, self.__edit_button, self.__upload_button]
 
         self.__setup(function_manager=function_manager)
 
         self.__state_manager = state_manager
+        self.__upload_manager = upload_manager
 
         self.__set_title(title=title)
 
@@ -121,25 +125,28 @@ class QuestionTitleElement(EditableElement):
 
     def pack_view(self) -> None:
         self._base_pack()
-        self.__edit_button.place(x=528, y=0)
-        self.__upload_button.place(x=507, y=14)
         self.__title_entry.config(state="readonly")
+        self.__edit_button.place(x=528, y=0)
+        if not self.__upload_manager.uploaded:
+            self.__upload_button.place(x=507, y=14)
 
     def pack(self) -> None:
+        self.__check_if_uploaded()
         if self.__state_manager.on_editing_mode():
             self.pack_edit()
         else:
             self.pack_view()
 
+    def __check_if_uploaded(self) -> None:
+        bg_color = THEME_COLOR if self.__upload_manager.uploaded else SECONDARY_COLOR
+        self._frame.config(bg=bg_color)
+        for button in self.__buttons:
+            button.config(bg=bg_color, activebackground=bg_color)
+
     def unpack(self) -> None:
         self._unpack()
-        self.__title_entry.place_forget()
-        self.__toggle_questions_button.place_forget()
-        self.__confirm_button.place_forget()
-        self.__remove_button.place_forget()
-        self.__cancel_button.place_forget()
-        self.__edit_button.place_forget()
-        self.__upload_button.place_forget()
+        for button in self.__buttons:
+            button.place_forget()
 
     @property
     def get_title(self) -> str:

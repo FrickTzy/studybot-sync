@@ -22,6 +22,9 @@ class RightSideFrame(FrameElement):
         self.__image_manager = image_manager
         self.__pack_label()
         self.__create_scrollable_frame()
+
+        self.__question_frame_list: List[QuestionMainFrame] = []
+
         self.__init_questions(questions_list=questions_list)
 
         # Add button frame at the bottom
@@ -61,22 +64,52 @@ class RightSideFrame(FrameElement):
         """Custom packing implementation. No additional packing needed for now."""
         pass
 
+    def __upload_function(self, question_frame: QuestionMainFrame, question_dict: dict) -> None:
+        for current_question_dict in self.__question_list:
+            current_question_dict["questionUploaded"] = False
+        question_dict["questionUploaded"] = True
+
+        self.__question_list.remove(question_dict)
+        self.__question_list.insert(0, question_dict)
+
+        self.__question_frame_list.remove(question_frame)
+        self.__question_frame_list.insert(0, question_frame)
+        self.__update_questions()
+
+    def __pack_questions(self) -> None:
+        for question_frame in self.__question_frame_list:
+            question_frame.pack()
+
+    def __unpack_questions(self) -> None:
+        for question_frame in self.__question_frame_list:
+            question_frame.unpack()
+
+    def __update_questions(self) -> None:
+        self.__unpack_questions()
+        self.__pack_questions()
+
     def add_question(self, question: dict) -> None:
         """Add a new question to the list and pack it into the scrollable frame."""
         state_manager = StateManager(state=ElementState.VIEW)
-        QuestionMainFrame(
+        question_main_frame = QuestionMainFrame(
             parent_frame=self.scrollable_frame, question=question,
-            image_manager=self.__image_manager, state_manager=state_manager
-        ).pack()
+            image_manager=self.__image_manager, state_manager=state_manager,
+            upload_function=self.__upload_function
+        )
+        question_main_frame.pack()
+        self.__question_frame_list.append(question_main_frame)
 
     def create_question(self, question: Optional[dict] = None) -> None:
         """Create a new question and switch its state to edit mode."""
         if question is None:
             question = {}
-
+        question["questionUploaded"] = False
         self.__question_list.append(question)
         state_manager = StateManager(state=ElementState.EDIT)
-        QuestionMainFrame(
+        question_main_frame = QuestionMainFrame(
             parent_frame=self.scrollable_frame, question=question,
-            image_manager=self.__image_manager, state_manager=state_manager
-        ).pack()
+            image_manager=self.__image_manager, state_manager=state_manager,
+            upload_function=self.__upload_function,
+        )
+        question_main_frame.pack()
+        self.__question_frame_list.append(question_main_frame)

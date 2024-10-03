@@ -25,8 +25,7 @@ class StudyBotApp(Tk):
                                                                              {"questionName": "Science",
                                                                               "score": "9/10", "date":
                                                                               "29/09/24", "time": "11:25 am"}])
-        self.__right_side_frame = RightSideFrame(self.__main_frame, image_manager=self.__image_manager,
-                                                 questions_list=retrieve_questions_data())
+        self.__right_side_frame = RightSideFrame(self.__main_frame, image_manager=self.__image_manager)
         self.__set_quit_functions()
         self.__pack()
 

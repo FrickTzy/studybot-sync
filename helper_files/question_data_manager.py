@@ -14,3 +14,11 @@ def set_questions_data(data: list) -> None:
 
 def delete_question(question: dict) -> None:
     questions_data.remove(question)
+
+
+def insert_question(index: int, question: dict) -> None:
+    questions_data.insert(index, question)
+
+
+def add_question(question: dict) -> None:
+    questions_data.append(question)

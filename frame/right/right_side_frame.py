@@ -1,33 +1,32 @@
 from tkinter import Frame, Label, Canvas, Scrollbar
 from .question_list import QuestionMainFrame
 from helper_files import ImageManager
+from helper_files.question_data_manager import delete_question, retrieve_questions_data, insert_question, add_question
 from interface.frame_element import FrameElement
 from .button_frame import ButtonFrame
 from helper_files.state_manager import StateManager, ElementState
 from typing import Optional, List
+from utils.api import upload_question
+from threading import Thread
 
 
 class RightSideFrame(FrameElement):
     """Frame to display and manage the list of questions on the right side of the UI."""
 
-    def __init__(self, parent_frame: Frame, image_manager: ImageManager, questions_list: List[dict]) -> None:
+    def __init__(self, parent_frame: Frame, image_manager: ImageManager) -> None:
         """Initialize the RightSideFrame with a list of questions and set up the canvas and scrollbar."""
         super().__init__(parent_frame=parent_frame, bg="white")
 
-        # Setup main packing configuration
         self._set_packing_kwargs(packing_kwargs={"side": "right", "fill": "y"})
 
-        # Initialize UI components
-        self.__question_list = questions_list
         self.__image_manager = image_manager
         self.__pack_label()
         self.__create_scrollable_frame()
 
         self.__question_frame_list: List[QuestionMainFrame] = []
 
-        self.__init_questions(questions_list=questions_list)
+        self.__init_questions(questions_list=retrieve_questions_data())
 
-        # Add button frame at the bottom
         ButtonFrame(parent_frame=self._frame, add_question_function=self.create_question).pack()
 
     def __pack_label(self) -> None:
@@ -65,16 +64,22 @@ class RightSideFrame(FrameElement):
         pass
 
     def __upload_function(self, question_frame: QuestionMainFrame, question_dict: dict) -> None:
-        for current_question_dict in self.__question_list:
+        for current_question_dict in retrieve_questions_data():
             current_question_dict["questionUploaded"] = False
         question_dict["questionUploaded"] = True
 
-        self.__question_list.remove(question_dict)
-        self.__question_list.insert(0, question_dict)
+        delete_question(question_dict)
+        insert_question(0, question_dict)
 
         self.__question_frame_list.remove(question_frame)
         self.__question_frame_list.insert(0, question_frame)
+
+        Thread(target=lambda: upload_question(question_dict=question_dict)).start()
+
         self.__update_questions()
+
+    def __delete_function(self, question_frame: QuestionMainFrame) -> None:
+        self.__question_frame_list.remove(question_frame)
 
     def __pack_questions(self) -> None:
         for question_frame in self.__question_frame_list:
@@ -94,7 +99,8 @@ class RightSideFrame(FrameElement):
         question_main_frame = QuestionMainFrame(
             parent_frame=self.scrollable_frame, question=question,
             image_manager=self.__image_manager, state_manager=state_manager,
-            upload_function=self.__upload_function
+            parent_upload_function=self.__upload_function,
+            parent_delete_function=self.__delete_function,
         )
         question_main_frame.pack()
         self.__question_frame_list.append(question_main_frame)
@@ -104,12 +110,13 @@ class RightSideFrame(FrameElement):
         if question is None:
             question = {}
         question["questionUploaded"] = False
-        self.__question_list.append(question)
+        add_question(question)
         state_manager = StateManager(state=ElementState.EDIT)
         question_main_frame = QuestionMainFrame(
             parent_frame=self.scrollable_frame, question=question,
             image_manager=self.__image_manager, state_manager=state_manager,
-            upload_function=self.__upload_function,
+            parent_upload_function=self.__upload_function,
+            parent_delete_function=self.__delete_function,
         )
         question_main_frame.pack()
         self.__question_frame_list.append(question_main_frame)

@@ -12,7 +12,7 @@ from helper_files import FunctionManager, UploadManager
 
 class QuestionTitleElement(EditableElement):
     def __init__(self, parent_frame: Frame, image_manager: ImageManager, state_manager: StateManager,
-                 function_manager: FunctionManager, toggled_on: bool,  upload_manager: UploadManager, title: str = ""):
+                 function_manager: FunctionManager, toggled_on: bool,  upload_manager: UploadManager, initial_title: str):
         super().__init__(parent_frame, bg=THEME_COLOR, width=575, height=50)
         self.__parent_frame = parent_frame
         self.__image_manager = image_manager
@@ -23,11 +23,12 @@ class QuestionTitleElement(EditableElement):
         self.__cancel_button = self.__get_cancel_button(function=lambda: function_manager.call_functions("revert_question"))
         self.__confirm_button = self.__get_confirm_button(function=lambda: function_manager.call_functions("save_question"))
         self.__remove_button = self.__get_remove_button(function=lambda: function_manager.call_functions("delete_question"))
+        self.__add_button = self.__get_add_question_button(function=lambda: function_manager.call_functions("add_question"))
 
         self.__edit_button = self.__get_edit_button(function=lambda: function_manager.call_functions("set_edit"))
         self.__upload_button = self.__get_upload_button(function=lambda: function_manager.call_functions("upload_function"))
 
-        self.__buttons = [self.__toggle_questions_button, self.__cancel_button,
+        self.__buttons = [self.__toggle_questions_button, self.__cancel_button, self.__add_button,
                           self.__confirm_button, self.__remove_button, self.__edit_button, self.__upload_button]
 
         self.__setup(function_manager=function_manager)
@@ -35,7 +36,7 @@ class QuestionTitleElement(EditableElement):
         self.__state_manager = state_manager
         self.__upload_manager = upload_manager
 
-        self.__set_title(title=title)
+        self.__set_title(title=initial_title)
 
     def __add_function(self, function_manager: FunctionManager) -> None:
         function_manager.add_function("toggle_function", self.__toggle_button_image)
@@ -108,8 +109,15 @@ class QuestionTitleElement(EditableElement):
         upload_image = self.__image_manager.get_tkinter_image(name="upload_logo_2.png", size=(21, 21))
         self._frame.upload_image = upload_image
         upload_button = LogoButton(self._frame, image=upload_image, command=function,
-                                    background=THEME_COLOR)
+                                   background=THEME_COLOR)
         return upload_button
+
+    def __get_add_question_button(self, function: Callable) -> Button:
+        add_button_image = self.__image_manager.get_tkinter_image(name="add_logo.png", size=(20, 20))
+        self._frame.add_button_image = add_button_image
+        question_button = LogoButton(self._frame, image=add_button_image, command=function,
+                                     background=THEME_COLOR)
+        return question_button
 
     def _base_pack(self) -> None:
         self._pack(padx=(0, MARGIN_BETWEEN_QUESTION))
@@ -120,7 +128,8 @@ class QuestionTitleElement(EditableElement):
         self._base_pack()
         self.__cancel_button.place(x=507, y=13)
         self.__confirm_button.place(x=538, y=12)
-        self.__remove_button.place(x=310, y=9)
+        self.__remove_button.place(x=335, y=9)
+        self.__add_button.place(x=312, y=14)
         self.__title_entry.config(state="normal")
 
     def pack_view(self) -> None:

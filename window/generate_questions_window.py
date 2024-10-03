@@ -87,10 +87,8 @@ class GenerateQuestionsWindow:
             )
             question_dict = {"title": question_topic, "questions": generated_questions}
             self.__add_question_function(question_dict)
-            print("Finished Generating.")
             self.__currently_generating = False
 
-        print(f"Generating {number_of_questions} questions for topic: {question_topic} at {difficulty} difficulty")
         Thread(target=start_generating, daemon=True).start()
 
     def __setup(self) -> None:
